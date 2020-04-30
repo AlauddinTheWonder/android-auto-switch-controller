@@ -5,8 +5,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -35,10 +38,12 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
     private ProgressDialog progressDialog;
     private NumberPickerDialog numberPickerDialog;
 
-    private SimpleDateFormat utcDF;
-    private SimpleDateFormat localDF;
+    private SimpleDateFormat utcDF, localDF;
+
+    MenuItem syncTimeMenuItem;
 
     private boolean gettingInfo = false;
+    private boolean terminalMode = false;
 
     private int numOfPins = 0;
     private int currentPinGetCnt = 0;
@@ -48,14 +53,9 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
 
     // Views
     private ScrollView scrollView;
-    private TextView logView;
-    private TextView deviceNameView;
-    private TextView currentTimeView;
-    private TextView btTimeView;
-    private TextView syncTimeView;
-    private TextView driftTimeView;
-    private LinearLayout contentView;
-    private LinearLayout timeView;
+    private EditText terminalInput;
+    private TextView logView, deviceNameView, currentTimeView, btTimeView, driftTimeView;
+    private LinearLayout contentView, timeView, terminalView;
     // Switches views
     private int maxSwitchLayouts = 5;
     private LinearLayout[] switchLayoutsViews = new LinearLayout[maxSwitchLayouts];
@@ -70,6 +70,8 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        terminalMode = getIntent().getBooleanExtra(Constants.EXTRA_TERMINAL_MODE, false);
 
         String deviceType = getIntent().getStringExtra(Constants.EXTRA_DEVICE_TYPE);
         if (deviceType != null && MyDevice.validateDevice(deviceType)) {
@@ -89,10 +91,11 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
 
         scrollView =  findViewById(R.id.log_scroll_view);
         logView = findViewById(R.id.log_view);
+        terminalView = findViewById(R.id.terminal_view);
+        terminalInput = findViewById(R.id.terminal_input);
         deviceNameView = findViewById(R.id.device_name_view);
         currentTimeView = findViewById(R.id.current_time);
         btTimeView = findViewById(R.id.bt_time);
-        syncTimeView = findViewById(R.id.sync_time);
         driftTimeView = findViewById(R.id.driftTime);
         contentView = findViewById(R.id.content_view);
         timeView = findViewById(R.id.time_view);
@@ -107,6 +110,27 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
                 switchOnOffViews[j] = findViewById(rSwtOnOff);
             }
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        syncTimeMenuItem = menu.findItem(R.id.sync_time_menu);
+        syncTimeMenuItem.setVisible(false);
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.sync_time_menu) {
+            onSyncDeviceTimeClick();
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -142,13 +166,18 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
         deviceNameView.setText(str);
         deviceNameView.setTextColor(getResources().getColor(R.color.btConnected));
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(MainActivity.this, "Getting info from BT device", Toast.LENGTH_LONG).show();
-                getInfoFromBT();
-            }
-        }, 1000);
+        if (terminalMode) {
+            terminalView.setVisibility(View.VISIBLE);
+        }
+        else {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this, "Getting info from BT device", Toast.LENGTH_LONG).show();
+                    getInfoFromBT();
+                }
+            }, 1000);
+        }
     }
 
     @Override
@@ -176,7 +205,19 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
 
     @Override
     public void onReceivedFromDevice(String data) {
-        onReceivedFromBT(data);
+        if (terminalMode) {
+            log("<< " + data);
+        }
+        else {
+            onReceivedFromBT(data);
+        }
+    }
+
+    public void onTerminalSendBtnClick(View view) {
+        String text = terminalInput.getText().toString();
+        log(">> " + text);
+        myDevice.send(text);
+        terminalInput.setText("");
     }
 
     public void onOnOffViewClick(View view) {
@@ -202,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
         });
     }
 
-    public void onSyncDeviceTimeClick(View view) {
+    public void onSyncDeviceTimeClick() {
         long timestampToUTC = Utils.getCurrentTimeUTC() + 1;
         log("Syncing BT device time with: " + timestampToUTC);
         runCommand(Constants.SET_TIME, timestampToUTC);
@@ -265,14 +306,10 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
 
 
 
-    private void resetCommand() {
-        Command.set(Constants.NO_COMMAND_VALUE, Constants.NO_COMMAND_VALUE);
-    }
-
     private void initView() {
         timeView.setVisibility(View.VISIBLE);
         contentView.setVisibility(View.VISIBLE);
-        syncTimeView.setVisibility(View.VISIBLE);
+        syncTimeMenuItem.setVisible(true);
 
         updateViewWithBTDetails();
         startCounter();
@@ -310,7 +347,7 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
             public void run() {
                 if (commandRetry >= Constants.COMMAND_MAX_RETRY) {
                     log("Command timeout");
-                    resetCommand();
+                    Command.reset();
                     progressDialog.hide();
                 }
                 else {
@@ -356,12 +393,12 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
                     Command.set(Constants.GET_SWITCH_VALUE, Constants.DRIFT_TIME_VALUE);
                 } else {
                     currentPinGetCnt = 0;
-                    resetCommand(); // Finished here
+                    Command.reset(); // Finished here
                 }
                 break;
 
             default:
-                resetCommand();
+                Command.reset();
                 break;
         }
 

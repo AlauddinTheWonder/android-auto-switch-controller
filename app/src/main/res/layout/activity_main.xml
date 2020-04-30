@@ -54,19 +54,10 @@
 
         </LinearLayout>
 
-    </LinearLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/top_view"
-        android:orientation="vertical"
-        android:layout_above="@+id/log_scroll_view">
-
         <LinearLayout
             android:id="@+id/content_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:padding="20dp"
             android:orientation="vertical"
             android:visibility="gone">
@@ -226,16 +217,16 @@
 
         </LinearLayout>
 
-
-    </RelativeLayout>
+    </LinearLayout>
 
     <ScrollView
         android:id="@+id/log_scroll_view"
-        android:layout_above="@+id/bottom_view"
+        android:layout_above="@+id/terminal_view"
+        android:layout_below="@+id/top_view"
         android:background="@color/loggerView"
         android:padding="10dp"
         android:layout_width="match_parent"
-        android:layout_height="160dp"
+        android:layout_height="match_parent"
         android:fillViewport="true"
         android:orientation="vertical">
 
@@ -248,22 +239,30 @@
     </ScrollView>
 
     <LinearLayout
-        android:id="@+id/bottom_view"
+        android:id="@+id/terminal_view"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
         android:layout_alignParentBottom="true"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         android:orientation="horizontal">
 
+        <EditText
+            android:id="@+id/terminal_input"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:hint="@string/terminal_input_hint"
+            android:autofillHints="Enter text to send"
+            />
+
         <Button
-            android:id="@+id/sync_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="onSyncDeviceTimeClick"
-            android:visibility="gone"
-            android:text="@string/sync_time_str" />
+            android:text="@string/send"
+            android:onClick="onTerminalSendBtnClick"
+            />
 
     </LinearLayout>
 

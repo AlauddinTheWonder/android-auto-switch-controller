@@ -5,10 +5,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.CheckBox;
 
 import com.alan.autoswitch.extra.Constants;
 
 public class LaunchActivity extends AppCompatActivity {
+
+    private Boolean terminalMode = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,9 +27,14 @@ public class LaunchActivity extends AppCompatActivity {
         this.startRelatedActivity(Constants.DEVICE_BLUETOOTH);
     }
 
+    public void onModeClick(View view) {
+        terminalMode = ((CheckBox) view).isChecked();
+    }
+
     private void startRelatedActivity(String name) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra(Constants.EXTRA_DEVICE_TYPE, name);
+        intent.putExtra(Constants.EXTRA_TERMINAL_MODE, terminalMode);
         startActivity(intent);
     }
 

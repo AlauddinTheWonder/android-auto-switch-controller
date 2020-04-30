@@ -24,6 +24,9 @@
 
     <string name="drift_txt">Set Drift Time:</string>
     <string name="in_seconds">(In Seconds)</string>
-    <string name="usb">USB</string>
+    <string name="usb">USB OTG</string>
     <string name="bluetooth">Bluetooth</string>
+    <string name="terminal_mode">Terminal Mode</string>
+    <string name="send">Send</string>
+    <string name="terminal_input_hint">Enter text to send</string>
 </resources>
