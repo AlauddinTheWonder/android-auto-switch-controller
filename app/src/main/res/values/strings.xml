@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">Auto Switch Controller</string>
+    <string name="mode_selection">Please select connection mode</string>
+    <string name="select_device_type">Select Device Type</string>
+
+    <string name="btn_connect">Connect</string>
+    <string name="btn_disconnect">Disconnect</string>
+    <string name="sync_time_str">Sync Time</string>
+    <string name="not_connected_str">Device not connected</string>
+    <string name="connected_str">Connected to: <b>%1$s</b></string>
+    <string name="current_time_str">Current Time:\n%1$s</string>
+    <string name="bt_time_str">BT Device Time:\n%1$s</string>
+
+    <string name="switch_clk_info">Click on values to edit them.</string>
+
+    <string name="switch_1">Switch 1:</string>
+    <string name="switch_2">Switch 2:</string>
+    <string name="switch_3">Switch 3:</string>
+    <string name="switch_4">Switch 4:</string>
+    <string name="switch_5">Switch 5:</string>
+
+    <string name="switch_on">On: <font color="#ff0000">%1$d</font></string>
+    <string name="switch_off">Off: %1$d</string>
+
+    <string name="drift_txt">Set Drift Time:</string>
+    <string name="in_seconds">(In Seconds)</string>
+    <string name="usb">USB</string>
+    <string name="bluetooth">Bluetooth</string>
+</resources>

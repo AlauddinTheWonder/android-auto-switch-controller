@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/appBG"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:id="@+id/top_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:background="@color/topView"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/device_name_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:textColor="@color/grey"
+            android:text="@string/not_connected_str" />
+
+        <LinearLayout
+            android:id="@+id/time_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            android:layout_marginTop="10dp">
+
+            <TextView
+                android:id="@+id/current_time"
+                android:layout_width="0dp"
+                android:layout_weight=".50"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:textSize="16sp"
+                android:text="@string/current_time_str" />
+
+            <TextView
+                android:id="@+id/bt_time"
+                android:layout_width="0dp"
+                android:layout_weight=".50"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:textSize="16sp"
+                android:text="@string/bt_time_str" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/top_view"
+        android:orientation="vertical"
+        android:layout_above="@+id/log_scroll_view">
+
+        <LinearLayout
+            android:id="@+id/content_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="20dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:textColor="#777"
+                android:text="@string/switch_clk_info"/>
+
+            <LinearLayout
+                style="@style/SwitchLayoutStyle"
+                android:id="@+id/switch_0_view">
+
+                <TextView
+                    style="@style/SwitchTextStyle"
+                    android:text="@string/switch_1"/>
+
+                <TextView
+                    android:id="@+id/pin_0_view"
+                    style="@style/SwitchOnOffStyle"
+                    android:tag="0"
+                    android:onClick="onOnOffViewClick"
+                    android:text="@string/switch_on"/>
+
+                <TextView
+                    android:id="@+id/pin_1_view"
+                    style="@style/SwitchOnOffStyle"
+                    android:tag="1"
+                    android:onClick="onOnOffViewClick"
+                    android:text="@string/switch_off"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/SwitchLayoutStyle"
+                android:id="@+id/switch_1_view">
+
+                <TextView
+                    style="@style/SwitchTextStyle"
+                    android:text="@string/switch_2"/>
+
+                <TextView
+                    style="@style/SwitchOnOffStyle"
+                    android:id="@+id/pin_2_view"
+                    android:tag="2"
+                    android:onClick="onOnOffViewClick"
+                    android:text="@string/switch_on"/>
+
+                <TextView
+                    style="@style/SwitchOnOffStyle"
+                    android:id="@+id/pin_3_view"
+                    android:tag="3"
+                    android:onClick="onOnOffViewClick"
+                    android:text="@string/switch_off"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/SwitchLayoutStyle"
+                android:id="@+id/switch_2_view">
+
+                <TextView
+                    style="@style/SwitchTextStyle"
+                    android:text="@string/switch_3"/>
+
+                <TextView
+                    android:id="@+id/pin_4_view"
+                    style="@style/SwitchOnOffStyle"
+                    android:tag="4"
+                    android:onClick="onOnOffViewClick"
+                    android:text="@string/switch_on"/>
+
+                <TextView
+                    android:id="@+id/pin_5_view"
+                    style="@style/SwitchOnOffStyle"
+                    android:tag="5"
+                    android:onClick="onOnOffViewClick"
+                    android:text="@string/switch_off"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/SwitchLayoutStyle"
+                android:id="@+id/switch_3_view">
+
+                <TextView
+                    style="@style/SwitchTextStyle"
+                    android:text="@string/switch_4"/>
+
+                <TextView
+                    android:id="@+id/pin_6_view"
+                    style="@style/SwitchOnOffStyle"
+                    android:tag="6"
+                    android:onClick="onOnOffViewClick"
+                    android:text="@string/switch_on"/>
+
+                <TextView
+                    android:id="@+id/pin_7_view"
+                    style="@style/SwitchOnOffStyle"
+                    android:tag="7"
+                    android:onClick="onOnOffViewClick"
+                    android:text="@string/switch_off"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/SwitchLayoutStyle"
+                android:id="@+id/switch_4_view">
+
+                <TextView
+                    style="@style/SwitchTextStyle"
+                    android:text="@string/switch_5"/>
+
+                <TextView
+                    style="@style/SwitchOnOffStyle"
+                    android:id="@+id/pin_8_view"
+                    android:tag="8"
+                    android:onClick="onOnOffViewClick"
+                    android:text="@string/switch_on"/>
+
+                <TextView
+                    style="@style/SwitchOnOffStyle"
+                    android:id="@+id/pin_9_view"
+                    android:tag="9"
+                    android:onClick="onOnOffViewClick"
+                    android:text="@string/switch_off"/>
+
+            </LinearLayout>
+
+            <View style="@style/Divider" />
+
+            <LinearLayout
+                android:id="@+id/driftView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    style="@style/NormalTextStyle"
+                    android:layout_marginEnd="10dp"
+                    android:text="@string/drift_txt"/>
+
+                <TextView
+                    android:id="@+id/driftTime"
+                    style="@style/NormalTextStyle"
+                    android:textStyle="bold"
+                    android:onClick="onDriftTimeClick"
+                    android:text="0" />
+
+                <TextView
+                    style="@style/HintTextStyle"
+                    android:layout_marginStart="10dp"
+                    android:text="@string/in_seconds" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+    </RelativeLayout>
+
+    <ScrollView
+        android:id="@+id/log_scroll_view"
+        android:layout_above="@+id/bottom_view"
+        android:background="@color/loggerView"
+        android:padding="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="160dp"
+        android:fillViewport="true"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/log_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="" />
+
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/bottom_view"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_alignParentBottom="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/sync_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onSyncDeviceTimeClick"
+            android:visibility="gone"
+            android:text="@string/sync_time_str" />
+
+    </LinearLayout>
+
+</RelativeLayout>
