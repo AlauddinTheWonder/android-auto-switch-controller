@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
+import android.os.Handler;
 
 import com.alan.autoswitch.extra.Constants;
 import com.alan.autoswitch.extra.Utils;
@@ -161,12 +162,13 @@ public class MyUsbDevice implements Device {
     };
 
     private UsbSerialInterface.UsbReadCallback serialCallback = new UsbSerialInterface.UsbReadCallback() {
+        final Handler handler = new Handler();
         ByteArrayOutputStream readStream = new ByteArrayOutputStream();
 
         @Override
-        public void onReceivedData(byte[] bytes) {
+        public void onReceivedData(final byte[] bytes) {
             if (bytes.length > 0) {
-                int idx = Utils.getIndexByDelim(bytes);
+                final int idx = Utils.getIndexByDelim(bytes);
 
                 if (idx == -1) {
                     readStream.write(bytes, 0, bytes.length);
@@ -175,14 +177,20 @@ public class MyUsbDevice implements Device {
                         readStream.write(bytes, 0, idx);
                     }
 
-                    if (listener != null) {
-                        listener.onReceivedFromDevice(readStream.toString().trim());
-                    }
-                    readStream.reset();
+                    handler.post(new Runnable()
+                    {
+                        public void run()
+                        {
+                            if (listener != null) {
+                                listener.onReceivedFromDevice(readStream.toString().trim());
+                            }
+                            readStream.reset();
 
-                    if (idx < bytes.length - 1) {
-                        readStream.write(bytes, idx + 1, bytes.length - (idx + 1));
-                    }
+                            if (idx < bytes.length - 1) {
+                                readStream.write(bytes, idx + 1, bytes.length - (idx + 1));
+                            }
+                        }
+                    });
                 }
             }
         }

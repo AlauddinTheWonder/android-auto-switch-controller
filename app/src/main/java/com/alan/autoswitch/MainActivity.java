@@ -8,7 +8,6 @@ import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -174,6 +173,7 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
                 @Override
                 public void run() {
                     Toast.makeText(MainActivity.this, "Getting info from BT device", Toast.LENGTH_LONG).show();
+                    Command.reset();
                     getInfoFromBT();
                 }
             }, 1000);
@@ -186,6 +186,8 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
         deviceNameView.setTextColor(getResources().getColor(R.color.grey));
         log("Device disconnected");
         Toast.makeText(this, "Device disconnected", Toast.LENGTH_SHORT).show();
+        Command.reset();
+        hideDetailView();
     }
 
     @Override
@@ -205,10 +207,9 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
 
     @Override
     public void onReceivedFromDevice(String data) {
-        if (terminalMode) {
-            log("<< " + data);
-        }
-        else {
+        log("<< " + data);
+
+        if (!terminalMode) {
             onReceivedFromBT(data);
         }
     }
@@ -306,13 +307,19 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
 
 
 
-    private void initView() {
+    private void showDetailViews() {
         timeView.setVisibility(View.VISIBLE);
         contentView.setVisibility(View.VISIBLE);
         syncTimeMenuItem.setVisible(true);
 
         updateViewWithBTDetails();
         startCounter();
+    }
+
+    private void hideDetailView() {
+        timeView.setVisibility(View.GONE);
+        contentView.setVisibility(View.GONE);
+        syncTimeMenuItem.setVisible(false);
     }
 
     private void updateViewWithBTDetails() {
@@ -411,13 +418,17 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
             }, Constants.COMMAND_GAP_TIME);
         } else {
             // stop getting values from BT as all details are fetched
+            Command.reset();
             gettingInfo = false;
-            initView();
+            showDetailViews();
             progressDialog.hide();
         }
     }
 
     private void onReceivedFromBT(String data) {
+        if (data.isEmpty()) {
+            return;
+        }
         int command = Command.COMMAND;
         long param = Command.PARAM;
         int intData = Integer.parseInt(data);
@@ -425,8 +436,6 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
         commandHandler.removeCallbacksAndMessages(null);
         commandRetry = 0;
         boolean isFailed = false;
-
-        log("<< " + command + ":" + param + " << " + data);
 
         switch (command) {
 

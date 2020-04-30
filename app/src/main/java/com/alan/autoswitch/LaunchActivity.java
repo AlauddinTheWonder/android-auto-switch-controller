@@ -17,6 +17,8 @@ public class LaunchActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_launch);
+
+        terminalMode = ((CheckBox)findViewById(R.id.mode)).isChecked();
     }
 
     public void onUsbClick(View view) {

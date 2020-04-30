@@ -51,6 +51,7 @@
             android:layout_below="@id/btn_bluetooth"
             android:layout_marginTop="40dp"
             android:textSize="20sp"
+            android:checked="false"
             android:onClick="onModeClick"
             android:text="@string/terminal_mode"
             />

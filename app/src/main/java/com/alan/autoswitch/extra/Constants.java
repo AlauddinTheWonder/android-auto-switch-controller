@@ -23,7 +23,7 @@ public class Constants {
 
     public static final int COMMAND_TIMEOUT = 5000;
     public static final int COMMAND_GAP_TIME = 500;
-    public static final int COMMAND_MAX_RETRY = 3;
+    public static final int COMMAND_MAX_RETRY = 2;
 
     // BT Device Commands
     public static final int NO_COMMAND_VALUE = 0;
