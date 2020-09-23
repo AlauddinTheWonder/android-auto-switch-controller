@@ -187,6 +187,7 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
         log("Device disconnected");
         Toast.makeText(this, "Device disconnected", Toast.LENGTH_SHORT).show();
         Command.reset();
+        counterThread.interrupt();
         hideDetailView();
     }
 
