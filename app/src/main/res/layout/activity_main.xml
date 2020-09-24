@@ -40,17 +40,25 @@
                 android:layout_weight=".50"
                 android:layout_height="wrap_content"
                 android:textAlignment="center"
-                android:textSize="16sp"
+                android:textSize="14sp"
                 android:text="@string/current_time_str" />
 
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:tint="@color/colorAccent"
+                android:onClick="onSyncDeviceTimeClick"
+                android:src="@android:drawable/ic_popup_sync" />
+
             <TextView
-                android:id="@+id/bt_time"
+                android:id="@+id/dev_time"
                 android:layout_width="0dp"
                 android:layout_weight=".50"
                 android:layout_height="wrap_content"
                 android:textAlignment="center"
-                android:textSize="16sp"
-                android:text="@string/bt_time_str" />
+                android:textSize="14sp"
+                android:text="@string/dev_time_str" />
 
         </LinearLayout>
 
@@ -66,7 +74,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp"
-                android:textColor="#777"
+                android:textColor="#F86161"
                 android:text="@string/switch_clk_info"/>
 
             <LinearLayout

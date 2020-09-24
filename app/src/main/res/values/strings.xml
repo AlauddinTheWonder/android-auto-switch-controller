@@ -9,7 +9,7 @@
     <string name="not_connected_str">Device not connected</string>
     <string name="connected_str">Connected to: <b>%1$s</b></string>
     <string name="current_time_str">Current Time:\n%1$s</string>
-    <string name="bt_time_str">BT Device Time:\n%1$s</string>
+    <string name="dev_time_str">Device Time:\n%1$s</string>
 
     <string name="switch_clk_info">Click on values to edit them.</string>
 
@@ -19,8 +19,8 @@
     <string name="switch_4">Switch 4:</string>
     <string name="switch_5">Switch 5:</string>
 
-    <string name="switch_on">On: <font color="#ff0000">%1$d</font></string>
-    <string name="switch_off">Off: %1$d</string>
+    <string name="switch_on">On: %1$d:00</string>
+    <string name="switch_off">Off: %1$d:00</string>
 
     <string name="drift_txt">Set Drift Time:</string>
     <string name="in_seconds">(In Seconds)</string>

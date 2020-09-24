@@ -8,5 +8,5 @@
     <color name="loggerView">#FFFFFF</color>
     <color name="colorPencil">#197688</color>
     <color name="grey">#999999</color>
-    <color name="btConnected">#0651F3</color>
+    <color name="deviceConnected">#0651F3</color>
 </resources>

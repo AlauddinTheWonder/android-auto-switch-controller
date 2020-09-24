@@ -2,7 +2,9 @@ package com.alan.autoswitch;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
@@ -39,21 +41,19 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
 
     private SimpleDateFormat utcDF, localDF;
 
-    MenuItem syncTimeMenuItem;
-
     private boolean gettingInfo = false;
     private boolean terminalMode = false;
 
     private int numOfPins = 0;
     private int currentPinGetCnt = 0;
     private int[] pinsValueArray;
-    private long btTimestamp = 0;
+    private long deviceTimestamp = 0;
     private int driftTimeValue = 0;
 
     // Views
     private ScrollView scrollView;
     private EditText terminalInput;
-    private TextView logView, deviceNameView, currentTimeView, btTimeView, driftTimeView;
+    private TextView logView, deviceNameView, currentTimeView, devTimeView, driftTimeView;
     private LinearLayout contentView, timeView, terminalView;
     // Switches views
     private int maxSwitchLayouts = 5;
@@ -65,10 +65,13 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
     int commandRetry = 0;
 
 
+    @SuppressLint("SourceLockedOrientationActivity")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         terminalMode = getIntent().getBooleanExtra(Constants.EXTRA_TERMINAL_MODE, false);
 
@@ -94,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
         terminalInput = findViewById(R.id.terminal_input);
         deviceNameView = findViewById(R.id.device_name_view);
         currentTimeView = findViewById(R.id.current_time);
-        btTimeView = findViewById(R.id.bt_time);
+        devTimeView = findViewById(R.id.dev_time);
         driftTimeView = findViewById(R.id.driftTime);
         contentView = findViewById(R.id.content_view);
         timeView = findViewById(R.id.time_view);
@@ -109,27 +112,6 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
                 switchOnOffViews[j] = findViewById(rSwtOnOff);
             }
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        syncTimeMenuItem = menu.findItem(R.id.sync_time_menu);
-        syncTimeMenuItem.setVisible(false);
-        return super.onPrepareOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.sync_time_menu) {
-            onSyncDeviceTimeClick();
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -163,20 +145,13 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
         log(str);
         Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
         deviceNameView.setText(str);
-        deviceNameView.setTextColor(getResources().getColor(R.color.btConnected));
+        deviceNameView.setTextColor(getResources().getColor(R.color.deviceConnected));
 
         if (terminalMode) {
             terminalView.setVisibility(View.VISIBLE);
         }
         else {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(MainActivity.this, "Getting info from BT device", Toast.LENGTH_LONG).show();
-                    Command.reset();
-                    getInfoFromBT();
-                }
-            }, 1000);
+            getInfoFromDevice();
         }
     }
 
@@ -211,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
         log("<< " + data);
 
         if (!terminalMode) {
-            onReceivedFromBT(data);
+            onDataReceived(data);
         }
     }
 
@@ -240,22 +215,21 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 log("Updating drift time value with " + which);
-                runCommand(Constants.DRIFT_TIME_VALUE, which);
+                runCommand(Command.DRIFT_TIME_VALUE, which);
             }
         });
     }
 
-    public void onSyncDeviceTimeClick() {
+    public void onSyncDeviceTimeClick(View view) {
         long timestampToUTC = Utils.getCurrentTimeUTC() + 1;
-        log("Syncing BT device time with: " + timestampToUTC);
-        runCommand(Constants.SET_TIME, timestampToUTC);
+        log("Syncing device time with: " + timestampToUTC);
+        runCommand(Command.SET_TIME, timestampToUTC);
     }
 
     private void log(final String text) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                logView.append("> ");
                 logView.append(text);
                 logView.append("\n");
 
@@ -276,7 +250,7 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
                 while(!Thread.currentThread().isInterrupted()){
                     try {
                         displayDateTime();
-                        displayBtDateTime();
+                        displayDeviceDateTime();
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
@@ -293,17 +267,17 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
         currentTimeView.setText(str);
     }
 
-    private void displayBtDateTime() {
+    private void displayDeviceDateTime() {
         String currentDateTimeString = "Not connected";
-        if (btTimestamp > 100000) {
-            btTimestamp++;
+        if (deviceTimestamp > 100000) {
+            deviceTimestamp++;
 
-            Date dt = new Date(btTimestamp * 1000);
-            currentDateTimeString = utcDF.format(new Date(btTimestamp * 1000));
+            Date dt = new Date(deviceTimestamp * 1000);
+            currentDateTimeString = utcDF.format(new Date(deviceTimestamp * 1000));
         }
 
-        String str = getString(R.string.bt_time_str, currentDateTimeString);
-        btTimeView.setText(str);
+        String str = getString(R.string.dev_time_str, currentDateTimeString);
+        devTimeView.setText(str);
     }
 
 
@@ -311,19 +285,17 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
     private void showDetailViews() {
         timeView.setVisibility(View.VISIBLE);
         contentView.setVisibility(View.VISIBLE);
-        syncTimeMenuItem.setVisible(true);
 
-        updateViewWithBTDetails();
+        updateViewWithDetails();
         startCounter();
     }
 
     private void hideDetailView() {
         timeView.setVisibility(View.GONE);
         contentView.setVisibility(View.GONE);
-        syncTimeMenuItem.setVisible(false);
     }
 
-    private void updateViewWithBTDetails() {
+    private void updateViewWithDetails() {
         for (int i = 0; i < numOfPins; i++) {
             switchLayoutsViews[i].setVisibility(View.VISIBLE);
 
@@ -363,7 +335,7 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
                     commandRetry++;
                     long newParam = param;
 
-                    if (command == Constants.SET_TIME) {
+                    if (command == Command.SET_TIME) {
                         newParam = Utils.getCurrentTimeUTC() + 1;
                     }
                     runCommand(command, newParam);
@@ -372,33 +344,44 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
         }, Constants.COMMAND_TIMEOUT);
     }
 
-    private void getInfoFromBT() {
+    private void getInfoFromDevice() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(MainActivity.this, "Getting info from device", Toast.LENGTH_LONG).show();
+                Command.reset();
+                startFetchingInfo();
+            }
+        }, 1000);
+    }
+
+    private void startFetchingInfo() {
         gettingInfo = true;
         progressDialog.show();
 
         switch (Command.COMMAND)
         {
-            case Constants.NO_COMMAND_VALUE:
-                Command.set(Constants.PING_BACK, Constants.NO_COMMAND_VALUE);
+            case Command.NO_COMMAND_VALUE:
+                Command.set(Command.PING_BACK, Command.NO_COMMAND_VALUE);
                 break;
 
-            case Constants.PING_BACK:
-                Command.set(Constants.GET_TIME, Constants.NO_COMMAND_VALUE);
+            case Command.PING_BACK:
+                Command.set(Command.GET_TIME, Command.NO_COMMAND_VALUE);
                 break;
 
-            case Constants.GET_TIME:
-                Command.set(Constants.GET_SWITCH_NUM, Constants.NO_COMMAND_VALUE);
+            case Command.GET_TIME:
+                Command.set(Command.GET_SWITCH_NUM, Command.NO_COMMAND_VALUE);
                 break;
 
-            case Constants.GET_SWITCH_NUM:
-            case Constants.GET_SWITCH_VALUE:
+            case Command.GET_SWITCH_NUM:
+            case Command.GET_SWITCH_VALUE:
                 currentPinGetCnt++;
 
                 if (currentPinGetCnt <= numOfPins * 2) {
-                    Command.set(Constants.GET_SWITCH_VALUE, currentPinGetCnt);
+                    Command.set(Command.GET_SWITCH_VALUE, currentPinGetCnt);
                 }
-                else if (Command.PARAM != Constants.DRIFT_TIME_VALUE) {
-                    Command.set(Constants.GET_SWITCH_VALUE, Constants.DRIFT_TIME_VALUE);
+                else if (Command.PARAM != Command.DRIFT_TIME_VALUE) {
+                    Command.set(Command.GET_SWITCH_VALUE, Command.DRIFT_TIME_VALUE);
                 } else {
                     currentPinGetCnt = 0;
                     Command.reset(); // Finished here
@@ -410,7 +393,7 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
                 break;
         }
 
-        if (Command.COMMAND != Constants.NO_COMMAND_VALUE) {
+        if (Command.COMMAND != Command.NO_COMMAND_VALUE) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -418,7 +401,7 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
                 }
             }, Constants.COMMAND_GAP_TIME);
         } else {
-            // stop getting values from BT as all details are fetched
+            // stop getting values from device as all details are fetched
             Command.reset();
             gettingInfo = false;
             showDetailViews();
@@ -426,13 +409,12 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
         }
     }
 
-    private void onReceivedFromBT(String data) {
+    private void onDataReceived(String data) {
         if (data.isEmpty()) {
             return;
         }
         int command = Command.COMMAND;
         long param = Command.PARAM;
-        int intData = Integer.parseInt(data);
 
         commandHandler.removeCallbacksAndMessages(null);
         commandRetry = 0;
@@ -440,23 +422,22 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
 
         switch (command) {
 
-            case Constants.PING_BACK:
-                if (intData != Constants.PING_BACK) {
-                    log("Invalid BT device.");
-                    isFailed = true;
+            case Command.PING_BACK:
+                if (!data.equals(String.valueOf(Command.PING_BACK))) {
+                    parseInitialConfigData(data);
                 }
                 break;
 
-            case Constants.GET_TIME:
-                btTimestamp = Long.parseLong(data);
+            case Command.GET_TIME:
+                deviceTimestamp = Long.parseLong(data);
                 break;
 
-            case Constants.SET_TIME:
-                btTimestamp = Long.parseLong(data);
+            case Command.SET_TIME:
+                deviceTimestamp = Long.parseLong(data);
                 break;
 
-            case Constants.GET_SWITCH_NUM:
-                numOfPins = intData;
+            case Command.GET_SWITCH_NUM:
+                numOfPins = Integer.parseInt(data);
 
                 if (numOfPins <= 0) {
                     log("No valid number of switch found: " + data);
@@ -467,8 +448,9 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
                 }
                 break;
 
-            case Constants.GET_SWITCH_VALUE: // Get switch hours or drift time value
-                if (param == Constants.DRIFT_TIME_VALUE) {
+            case Command.GET_SWITCH_VALUE: // Get switch hours or drift time value
+                int intData = Integer.parseInt(data);
+                if (param == Command.DRIFT_TIME_VALUE) {
                     driftTimeValue = intData;
                 } else {
                     pinsValueArray[(int) param] = intData;
@@ -476,22 +458,66 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
                 break;
 
             default:
-                if (command > 0 && command <= Constants.DRIFT_TIME_VALUE) { // Set switch hours or drift time value
-                    if (command == Constants.DRIFT_TIME_VALUE) {
-                        driftTimeValue = intData;
+                if (command > 0 && command <= Command.DRIFT_TIME_VALUE) { // Set switch hours or drift time value
+                    int intValue = Integer.parseInt(data);
+                    if (command == Command.DRIFT_TIME_VALUE) {
+                        driftTimeValue = intValue;
                     } else {
-                        pinsValueArray[command] = intData;
+                        pinsValueArray[command] = intValue;
                     }
                 }
                 break;
         }
 
         if (gettingInfo && !isFailed) {
-            getInfoFromBT();
+            startFetchingInfo();
         }
         else {
             progressDialog.hide();
-            updateViewWithBTDetails();
+            updateViewWithDetails();
+        }
+    }
+
+    private void parseInitialConfigData(String data)
+    {
+        gettingInfo = false;
+        String[] chunks = data.split("\\|");
+        if (chunks.length > 0) {
+
+            for (String chunk : chunks) {
+                if (!chunk.isEmpty()) {
+                    String[] commands = chunk.split(":");
+                    int command = Integer.parseInt(commands[0]);
+                    int intData = Integer.parseInt(commands[1]);
+
+                    switch (command) {
+                        case Command.GET_TIME:
+                            deviceTimestamp = Long.parseLong(commands[1]);
+                            break;
+
+                        case Command.GET_SWITCH_NUM:
+                            numOfPins = intData;
+
+                            if (numOfPins > 0) {
+                                pinsValueArray = new int[numOfPins * 2 + 1];
+                                pinsValueArray[0] = numOfPins;
+                            }
+                            break;
+
+                        case Command.DRIFT_TIME_VALUE:
+                            driftTimeValue = intData;
+                            break;
+
+                        default:
+                            pinsValueArray[command] = intData;
+                            break;
+                    }
+                }
+            }
+            Command.reset();
+            showDetailViews();
+        } else {
+            log("Invalid Device");
         }
     }
 
