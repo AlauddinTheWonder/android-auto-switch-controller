@@ -1,6 +1,9 @@
 package com.alan.autoswitch;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -9,9 +12,12 @@ import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,6 +25,8 @@ import android.widget.Toast;
 import com.alan.autoswitch.classes.Device;
 import com.alan.autoswitch.classes.DeviceListener;
 import com.alan.autoswitch.classes.MyDevice;
+import com.alan.autoswitch.classes.adapter.SwitchListAdapter;
+import com.alan.autoswitch.classes.model.SwitchModel;
 import com.alan.autoswitch.extra.Command;
 import com.alan.autoswitch.extra.Constants;
 import com.alan.autoswitch.extra.Debounce;
@@ -27,6 +35,7 @@ import com.alan.autoswitch.extra.ProgressDialog;
 import com.alan.autoswitch.extra.Utils;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -58,8 +67,10 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
     private ScrollView scrollView;
     private EditText terminalInput;
     private TextView logView, deviceNameView, currentTimeView, deviceTimeView;
-    private LinearLayout timeView, terminalView;
+    private LinearLayout timeView, bottomView, terminalView;
+    private RecyclerView switchListView;
 
+    private ArrayList<SwitchModel> switchList = new ArrayList<>();
 
     @SuppressLint("SourceLockedOrientationActivity")
     @Override
@@ -88,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
         utcDF = new SimpleDateFormat(Constants.DATE_FORMAT, Locale.getDefault());
         utcDF.setTimeZone(TimeZone.getTimeZone("GMT"));
 
+        bottomView = findViewById(R.id.bottom_view);
         scrollView =  findViewById(R.id.log_scroll_view);
         logView = findViewById(R.id.log_view);
 
@@ -100,7 +112,20 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
         currentTimeView = findViewById(R.id.current_time);
         deviceTimeView = findViewById(R.id.device_time);
 
+        switchListView = findViewById(R.id.switch_list_view);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, RecyclerView.VERTICAL, false);
+        switchListView.setLayoutManager(layoutManager);
+        switchListView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
 
+        if (TerminalMode) {
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            params.addRule(RelativeLayout.BELOW, R.id.top_view);
+
+            bottomView.setLayoutParams(params);
+        }
+
+        // TODO: remove dummy data function
+        loadDummyData();
     }
 
     @Override
@@ -160,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
 
     @Override
     public void onExitRequest() {
-        finish();
+        exitScreen("");
     }
 
     @Override
@@ -216,8 +241,10 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
 
     private void exitScreen(final String msg) {
         progressDialog.hide();
-        Log.i(Constants.TAG, msg);
-        Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
+        if (!msg.isEmpty()) {
+            Log.i(Constants.TAG, msg);
+            Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
+        }
         finish();
     }
 
@@ -260,44 +287,51 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
 
     private void showDetailViews() {
         timeView.setVisibility(View.VISIBLE);
-        // TODO: show content view
+        switchListView.setVisibility(View.VISIBLE);
+
+        final SwitchListAdapter switchListAdapter = new SwitchListAdapter(switchList);
+        switchListView.setAdapter(switchListAdapter);
+        switchListAdapter.setOnEditClickListener(new SwitchListAdapter.OnEditClickListener() {
+            @Override
+            public void onEdit(int position, SwitchModel switchModel) {
+
+                log("Clicked on " + position);
+                // TODO: show popup for edit
+                switchListAdapter.updateItem(position, switchModel);
+            }
+        });
+
+        switchListAdapter.setOnDeleteClickListener(new SwitchListAdapter.OnDeleteClickListener() {
+            @Override
+            public void onDelete(int position, SwitchModel switchModel) {
+
+                log(String.valueOf(switchModel.getIndex()));
+
+                SwitchModel sModel = new SwitchModel(0, 0, 0, switchModel.getIndex());
+                switchListAdapter.updateItem(position, sModel);
+
+//                switchListAdapter.deleteItem(position);
+            }
+        });
 
         startCounter();
     }
 
     private void hideDetailView() {
         timeView.setVisibility(View.GONE);
-        // TODO: hide content view
+        switchListView.setVisibility(View.GONE);
     }
-
-    private void updateViewWithDetails() {
-        // TODO: update pin views
-
-        for (int i = 0; i < MaxSettingsCount; i++) {
-//            switchLayoutsViews[i].setVisibility(View.VISIBLE);
-
-            int j = (i * 3) + 1;
-            String str = PinSettingsArray[j] + " => " + PinSettingsArray[j+1] + ":" + PinSettingsArray[j+2];
-            Log.i(Constants.TAG, str);
-
-//            for (int j = (i * 3); j < (i * 3 + 3); j++) {
-//                int rId = (j % 2 == 0) ? R.string.switch_on : R.string.switch_off;
-//                String onOffStr = getString(rId, pinsValueArray[j + 1]);
-//                switchOnOffViews[j].setText(onOffStr);
-//            }
-        }
-    }
-
-
 
     private void getInfoFromDevice() {
+        progressDialog.show();
+
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 log("Getting info from device");
                 runCommand(Command.GET_ALL_DATA, Command.NO_COMMAND_VALUE);
             }
-        }, 1000);
+        }, 3000);
     }
 
     private void runCommand(final int command, final long param) {
@@ -347,51 +381,36 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
 
         commandHandler.removeCallbacksAndMessages(null);
         commandRetry = 0;
+        boolean reParseSettings = true;
 
         switch (command) {
 
             case Command.GET_ALL_DATA:
+                reParseSettings = false;
                 parseInitialConfigData(data);
                 break;
 
             case Command.GET_TIME:
-                DeviceTimestamp = Long.parseLong(data);
-                break;
-
             case Command.SET_TIME:
                 DeviceTimestamp = Long.parseLong(data);
                 break;
 
-            case Command.GET_SWITCH_NUM:
-                NumOfSwitches = Integer.parseInt(data);;
-
-                if (NumOfSwitches <= 0) {
-                    exitScreen("No valid number of switch found: " + data);
-                }
-                break;
-
-            case Command.GET_MAX_SETTINGS:
-                MaxSettingsCount = Integer.parseInt(data);;
-
-                if (MaxSettingsCount > 0) {
-                    PinSettingsArray = new int[MaxSettingsCount * 3 + 1];
-                    PinSettingsArray[0] = NumOfSwitches; // Pin setting starts from 1 index.
-                }
-                break;
-
-            case Command.GET_SWITCH_VALUE: // Get switch hours or drift time value
+            case Command.GET_SWITCH_VALUE:
                 PinSettingsArray[(int) param] = Integer.parseInt(data);;
                 break;
 
             default:
-                if (command > 0) { // Set switch hours or drift time value
+                if (command > 0 && MaxSettingsCount > 0 && command <= (MaxSettingsCount * 3)) {
                     PinSettingsArray[command] = Integer.parseInt(data);;
                 }
                 break;
         }
 
+        if (reParseSettings) {
+            parseSettingsToSwitchList();
+        }
         progressDialog.hide();
-        updateViewWithDetails();
+        Command.reset();
     }
 
     private void parseInitialConfigData(String data) {
@@ -428,17 +447,59 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
                                 break;
 
                             default:
-                                PinSettingsArray[command] = intData;
+                                if (MaxSettingsCount > 0 && command <= (MaxSettingsCount * 3)) {
+                                    PinSettingsArray[command] = intData;
+                                }
                                 break;
                         }
                     }
                 }
             }
-            Command.reset();
+
+            parseSettingsToSwitchList();
             showDetailViews();
         } else {
             exitScreen("Invalid data received. Please try again!");
         }
     }
 
+    private void parseSettingsToSwitchList() {
+        if (switchList.size() > 0) {
+            switchList.clear();
+        }
+        for (int i = 0; i < MaxSettingsCount; i++) {
+            int pos = (i * 3) + 1;
+            int pin = PinSettingsArray[pos];
+            int on = PinSettingsArray[pos + 1];
+            int off = PinSettingsArray[pos + 2];
+
+            SwitchModel switchModel = new SwitchModel(pin, on, off, pos);
+            switchList.add(switchModel);
+        }
+    }
+
+    private void loadDummyData() {
+        if (TerminalMode) {
+            terminalView.setVisibility(View.VISIBLE);
+        } else {
+            NumOfSwitches = 3;
+            MaxSettingsCount = 10;
+
+            DeviceTimestamp = Utils.getCurrentTimeUTC();
+
+            PinSettingsArray = new int[MaxSettingsCount * 3 + 1];
+            PinSettingsArray[0] = NumOfSwitches;
+
+            for (int i = 0; i < MaxSettingsCount; i++) {
+                int pos = (i * 3) + 1;
+
+                PinSettingsArray[pos] = i + 1;
+                PinSettingsArray[pos + 1] = Utils.getRandomNumberInRange(0, 23);
+                PinSettingsArray[pos + 2] = Utils.getRandomNumberInRange(0, 23);
+            }
+
+            parseSettingsToSwitchList();
+            showDetailViews();
+        }
+    }
 }

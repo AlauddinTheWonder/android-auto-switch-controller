@@ -13,20 +13,16 @@
 
     <string name="switch_clk_info">Click on values to edit them.</string>
 
-    <string name="switch_1">Switch 1:</string>
-    <string name="switch_2">Switch 2:</string>
-    <string name="switch_3">Switch 3:</string>
-    <string name="switch_4">Switch 4:</string>
-    <string name="switch_5">Switch 5:</string>
+    <string name="switch_str">Switch</string>
+    <string name="on_str">On</string>
+    <string name="off_str">Off</string>
+    <string name="time_str">%1$d:00</string>
 
-    <string name="switch_on">On: %1$d:00</string>
-    <string name="switch_off">Off: %1$d:00</string>
-
-    <string name="drift_txt">Set Drift Time:</string>
-    <string name="in_seconds">(In Seconds)</string>
     <string name="usb">USB OTG</string>
     <string name="bluetooth">Bluetooth</string>
     <string name="terminal_mode">Terminal Mode</string>
     <string name="send">Send</string>
     <string name="terminal_input_hint">Enter text to send</string>
+    <string name="sync">Sync</string>
+    <string name="delete_str">Del</string>
 </resources>

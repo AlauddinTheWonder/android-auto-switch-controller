@@ -48,6 +48,7 @@
                 android:layout_height="wrap_content"
                 android:background="@android:color/transparent"
                 android:tint="@color/colorAccent"
+                android:contentDescription="@string/sync"
                 android:onClick="onSyncDeviceTimeClick"
                 android:src="@android:drawable/ic_popup_sync" />
 
@@ -64,50 +65,77 @@
 
     </LinearLayout>
 
-    <ScrollView
-        android:id="@+id/log_scroll_view"
-        android:layout_above="@+id/terminal_view"
-        android:layout_below="@+id/top_view"
-        android:background="@color/loggerView"
-        android:padding="10dp"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/log_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="" />
-
-    </ScrollView>
-
     <LinearLayout
-        android:id="@+id/terminal_view"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true"
+        android:id="@+id/content_view"
+        android:background="@color/contentBg"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:orientation="horizontal">
+        android:layout_below="@id/top_view"
+        android:layout_above="@id/bottom_view"
+        >
 
-        <EditText
-            android:id="@+id/terminal_input"
-            android:layout_width="0dp"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/switch_list_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/bottom_view"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
+        >
+
+        <ScrollView
+            android:id="@+id/log_scroll_view"
+            android:background="@color/loggerBg"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:inputType="text"
-            android:hint="@string/terminal_input_hint"
-            android:autofillHints="Enter text to send"
-            />
+            android:fillViewport="true"
+            android:padding="10dp"
+            android:orientation="vertical">
 
-        <Button
-            android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/log_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/loggerText"
+                android:text="" />
+
+        </ScrollView>
+
+        <LinearLayout
+            android:id="@+id/terminal_view"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/send"
-            android:onClick="onTerminalSendBtnClick"
-            />
+            android:visibility="gone"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/terminal_input"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:hint="@string/terminal_input_hint"
+                android:autofillHints="Enter text to send"
+                />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/send"
+                android:onClick="onTerminalSendBtnClick"
+                />
+
+        </LinearLayout>
 
     </LinearLayout>
 

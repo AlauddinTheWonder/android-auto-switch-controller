@@ -1,5 +1,6 @@
 package com.alan.autoswitch.extra;
 
+import java.util.Random;
 import java.util.TimeZone;
 
 public class Utils {
@@ -18,5 +19,9 @@ public class Utils {
         long timestamp = System.currentTimeMillis() / 1000;
         long offset = TimeZone.getDefault().getRawOffset() / 1000;
         return timestamp + offset;
+    }
+
+    public static int getRandomNumberInRange(int min, int max) {
+        return new Random().nextInt((max - min) + 1) + min;
     }
 }

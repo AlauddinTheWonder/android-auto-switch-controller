@@ -5,7 +5,9 @@
     <color name="colorAccent">#03DAC5</color>
     <color name="appBG">#DEDEDE</color>
     <color name="topView">#FEFFF2</color>
-    <color name="loggerView">#FFFFFF</color>
+    <color name="contentBg">#FFFFFF</color>
+    <color name="loggerBg">#000000</color>
+    <color name="loggerText">#FFFFFF</color>
     <color name="colorPencil">#197688</color>
     <color name="grey">#999999</color>
     <color name="deviceConnected">#0651F3</color>
