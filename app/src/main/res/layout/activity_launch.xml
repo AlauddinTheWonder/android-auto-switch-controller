@@ -21,11 +21,23 @@
             android:text="@string/mode_selection" />
 
         <Button
+            android:id="@+id/btn_bluetooth"
+            style="@style/launch_button"
+            android:onClick="onBluetoothClick"
+            android:layout_below="@id/info_text"
+            android:layout_marginVertical="10dp"
+            android:background="@drawable/rounded_button"
+            android:backgroundTint="#0336ff"
+            android:drawableStart="@android:drawable/stat_sys_data_bluetooth"
+            android:text="@string/bluetooth"
+            />
+
+        <Button
             android:id="@+id/btn_usb"
             style="@style/launch_button"
             android:onClick="onUsbClick"
-            android:layout_below="@id/info_text"
-            android:layout_marginBottom="20dp"
+            android:layout_below="@id/btn_bluetooth"
+            android:layout_marginVertical="10dp"
             android:background="@drawable/rounded_button"
             android:backgroundTint="#333333"
             android:drawableStart="@android:drawable/stat_notify_sdcard_usb"
@@ -33,14 +45,15 @@
             />
 
         <Button
-            android:id="@+id/btn_bluetooth"
+            android:id="@+id/btn_mock"
             style="@style/launch_button"
-            android:onClick="onBluetoothClick"
+            android:onClick="onMockDevClick"
             android:layout_below="@id/btn_usb"
+            android:layout_marginVertical="10dp"
             android:background="@drawable/rounded_button"
-            android:backgroundTint="#0336ff"
-            android:drawableStart="@android:drawable/stat_sys_data_bluetooth"
-            android:text="@string/bluetooth"
+            android:backgroundTint="#999999"
+            android:drawableStart="@android:drawable/stat_notify_sdcard_usb"
+            android:text="@string/mock_device"
             />
 
         <CheckBox
@@ -48,8 +61,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_below="@id/btn_bluetooth"
-            android:layout_marginTop="40dp"
+            android:layout_below="@id/btn_usb"
+            android:layout_marginTop="30dp"
             android:textSize="20sp"
             android:checked="false"
             android:onClick="onModeClick"

@@ -8,8 +8,10 @@ public class Constants {
 
     public static final String DEVICE_USB = "com.device.usb";
     public static final String DEVICE_BLUETOOTH = "com.device.bluetooth";
+    public static final String DEVICE_MOCK_DEVICE = "com.device.mock_device";
     public static final String EXTRA_DEVICE_TYPE = "com.alan.extra.device.type";
     public static final String EXTRA_TERMINAL_MODE = "com.alan.extra.terminal.mode";
+    public static final String EXTRA_SHOW_LOGS = "com.alan.extra.show.lows";
 
     public static final String ACTION_USB_PERMISSION = "com.alan.usb.permission";
     public static final int DEFAULT_BAUD_RATE = 9600;
@@ -24,5 +26,5 @@ public class Constants {
     public static final int COMMAND_TIMEOUT = 5000;
     public static final int COMMAND_GAP_TIME = 500;
     public static final int COMMAND_MAX_RETRY = 2;
-
+    public static final int SWITCH_SINGLE_ROW_CNT = 3;
 }

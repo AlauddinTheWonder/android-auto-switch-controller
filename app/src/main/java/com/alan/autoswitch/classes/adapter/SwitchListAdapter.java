@@ -7,6 +7,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.alan.autoswitch.R;
@@ -41,6 +42,7 @@ public class SwitchListAdapter extends RecyclerView.Adapter<SwitchListAdapter.Vi
         this.listdata = listdata;
     }
 
+    @NonNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
@@ -49,28 +51,53 @@ public class SwitchListAdapter extends RecyclerView.Adapter<SwitchListAdapter.Vi
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
         final SwitchModel item = listdata.get(position);
-        holder.switch_no.setText(String.valueOf(item.getPin()));
-        holder.on_txt.setText(String.valueOf(item.getOn()));
-        holder.off_txt.setText(String.valueOf(item.getOff()));
 
-        holder.del_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (onDeleteClickListener != null)
-                    onDeleteClickListener.onDelete(position, item);
-            }
-        });
+        if (item.getPin() == 0) {
+            holder.addBtn.setVisibility(View.VISIBLE);
+            holder.editBtn.setVisibility(View.GONE);
+            holder.delBtn.setVisibility(View.GONE);
 
-        holder.info_view.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (onEditClickListener != null)
-                    onEditClickListener.onEdit(position, item);
-            }
-        });
+            holder.addView.setVisibility(View.VISIBLE);
+            holder.infoView.setVisibility(View.GONE);
 
+            holder.addBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (onEditClickListener != null)
+                        onEditClickListener.onEdit(position, item);
+                }
+            });
+        }
+        else {
+            holder.addBtn.setVisibility(View.GONE);
+            holder.editBtn.setVisibility(View.VISIBLE);
+            holder.delBtn.setVisibility(View.VISIBLE);
+
+            holder.addView.setVisibility(View.GONE);
+            holder.infoView.setVisibility(View.VISIBLE);
+
+            holder.switchNum.setText(String.valueOf(item.getPin()));
+            holder.onTxt.setText(String.valueOf(item.getOn()));
+            holder.offTxt.setText(String.valueOf(item.getOff()));
+
+            holder.delBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (onDeleteClickListener != null)
+                        onDeleteClickListener.onDelete(position, item);
+                }
+            });
+
+            holder.editBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (onEditClickListener != null)
+                        onEditClickListener.onEdit(position, item);
+                }
+            });
+        }
     }
 
     public void deleteItem(int position) {
@@ -80,7 +107,7 @@ public class SwitchListAdapter extends RecyclerView.Adapter<SwitchListAdapter.Vi
     }
 
     public void updateItem(int position, SwitchModel switchModel) {
-        listdata.add(position, switchModel);
+        listdata.set(position, switchModel);
         notifyItemChanged(position, switchModel);
     }
 
@@ -90,17 +117,23 @@ public class SwitchListAdapter extends RecyclerView.Adapter<SwitchListAdapter.Vi
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        LinearLayout info_view;
-        TextView switch_no, on_txt, off_txt;
-        ImageButton del_btn;
+        LinearLayout infoView;
+        TextView addView, switchNum, onTxt, offTxt;
+        ImageButton addBtn, editBtn, delBtn;
 
         ViewHolder(View itemView) {
             super(itemView);
-            switch_no = itemView.findViewById(R.id.switch_txt);
-            on_txt = itemView.findViewById(R.id.on_txt);
-            off_txt = itemView.findViewById(R.id.off_txt);
-            info_view = itemView.findViewById(R.id.info_view);
-            del_btn = itemView.findViewById(R.id.del_btn);
+
+            infoView = itemView.findViewById(R.id.info_view);
+            addView = itemView.findViewById(R.id.add_view);
+
+            switchNum = itemView.findViewById(R.id.switch_txt);
+            onTxt = itemView.findViewById(R.id.on_txt);
+            offTxt = itemView.findViewById(R.id.off_txt);
+
+            addBtn = itemView.findViewById(R.id.add_btn);
+            editBtn = itemView.findViewById(R.id.edit_btn);
+            delBtn = itemView.findViewById(R.id.del_btn);
         }
     }
 }

@@ -11,7 +11,7 @@ import com.alan.autoswitch.extra.Constants;
 
 public class LaunchActivity extends AppCompatActivity {
 
-    private Boolean terminalMode = false;
+    private boolean terminalMode = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +27,10 @@ public class LaunchActivity extends AppCompatActivity {
 
     public void onBluetoothClick(View view) {
         this.startRelatedActivity(Constants.DEVICE_BLUETOOTH);
+    }
+
+    public void onMockDevClick(View view) {
+        this.startRelatedActivity(Constants.DEVICE_MOCK_DEVICE);
     }
 
     public void onModeClick(View view) {

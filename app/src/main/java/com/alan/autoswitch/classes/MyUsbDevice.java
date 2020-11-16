@@ -11,6 +11,8 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.os.Handler;
 
+import com.alan.autoswitch.classes.interfaces.Device;
+import com.alan.autoswitch.classes.interfaces.DeviceListener;
 import com.alan.autoswitch.extra.Constants;
 import com.alan.autoswitch.extra.Utils;
 import com.felhr.usbserial.UsbSerialDevice;
@@ -28,15 +30,19 @@ public class MyUsbDevice implements Device {
     private UsbDevice usbDevice;
     private UsbSerialDevice serial;
 
-    public MyUsbDevice(Activity context) {
+    private int baudRate;
+
+    MyUsbDevice(Activity context, int baudRate) {
         this.context = context;
         usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
 
-            IntentFilter filter = new IntentFilter();
+        IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.ACTION_USB_PERMISSION);
         filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         this.context.registerReceiver(receiver, filter);
+
+        this.baudRate = baudRate;
     }
 
     @Override
@@ -119,7 +125,7 @@ public class MyUsbDevice implements Device {
 
                     if (serial != null) {
                         if (serial.open()) {
-                            serial.setBaudRate(Constants.DEFAULT_BAUD_RATE);
+                            serial.setBaudRate(baudRate);
                             serial.setDataBits(UsbSerialInterface.DATA_BITS_8);
                             serial.setStopBits(UsbSerialInterface.STOP_BITS_1);
                             serial.setParity(UsbSerialInterface.PARITY_NONE);
@@ -133,7 +139,7 @@ public class MyUsbDevice implements Device {
                                 }
                                 listener.onDeviceConnect(devName);
                             }
-                            info("Device connected via Serial port: " + Constants.DEFAULT_BAUD_RATE);
+                            info("Device connected via Serial port: " + baudRate);
                         } else {
                             info("Can't open Serial");
                         }

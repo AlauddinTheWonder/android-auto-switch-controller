@@ -25,4 +25,11 @@
     <string name="terminal_input_hint">Enter text to send</string>
     <string name="sync">Sync</string>
     <string name="delete_str">Del</string>
+    <string name="show_logs">Show Logs</string>
+    <string name="add">Add</string>
+    <string name="off_hour">Off Hour</string>
+    <string name="on_hour">On Hour</string>
+    <string name="switch_txt">Select switch</string>
+    <string name="edit_str">Edit</string>
+    <string name="mock_device">Mock Device</string>
 </resources>

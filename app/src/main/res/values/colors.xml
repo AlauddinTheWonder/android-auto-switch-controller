@@ -10,5 +10,11 @@
     <color name="loggerText">#FFFFFF</color>
     <color name="colorPencil">#197688</color>
     <color name="grey">#999999</color>
+    <color name="black">#000000</color>
     <color name="deviceConnected">#0651F3</color>
+    <color name="menuIconTint">#000</color>
+    <color name="menuIconTintActive">#fff</color>
+    <color name="switchIcon">#666</color>
+    <color name="switchLabel">#777</color>
+    <color name="switchValue">#333</color>
 </resources>

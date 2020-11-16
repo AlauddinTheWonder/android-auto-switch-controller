@@ -11,98 +11,115 @@
         >
 
         <LinearLayout
-            android:id="@+id/info_view"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:gravity="start"
-            android:layout_gravity="center"
             android:layout_weight="1"
-            android:paddingStart="15dp"
-            android:paddingEnd="5dp"
-            >
+            android:layout_gravity="center"
+            android:gravity="start"
+            android:orientation="horizontal"
+            android:paddingStart="15dp">
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_gravity="center"
-                android:gravity="start">
-
-                <TextView
-                    android:textSize="18sp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/switch_str" />
-
-                <TextView
-                    android:textSize="18sp"
-                    android:id="@+id/switch_txt"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="5dp"
-                    android:text="0" />
-            </LinearLayout>
-
-            <LinearLayout
+            <TextView
+                android:id="@+id/add_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:gravity="end"
-                android:layout_marginEnd="5dp"
-                android:orientation="horizontal">
+                android:text="Empty slot"
+                android:textStyle="italic"
+                android:textSize="18sp"
+                android:textColor="@color/grey"
+                android:visibility="gone"/>
+
+            <LinearLayout
+                android:id="@+id/info_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="visible"
+                >
 
                 <LinearLayout
-                    android:layout_width="80dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:layout_gravity="center"
+                    android:gravity="start">
 
                     <TextView
-                        android:textSize="18sp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/on_str" />
+                        style="@style/SwitchLabelStyle"
+                        android:text="@string/switch_str" />
 
                     <TextView
-                        android:textSize="18sp"
-                        android:id="@+id/on_txt"
+                        android:id="@+id/switch_txt"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        style="@style/SwitchValueStyle"
                         android:layout_marginStart="5dp"
                         android:text="0" />
-
-
-                    <TextView
-                        android:textSize="18sp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text=":00" />
                 </LinearLayout>
 
                 <LinearLayout
-                    android:layout_width="80dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="25dp"
+                    android:layout_gravity="center"
+                    android:gravity="end"
+                    android:layout_marginEnd="5dp"
                     android:orientation="horizontal">
 
-                    <TextView
-                        android:textSize="18sp"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="90dp"
                         android:layout_height="wrap_content"
-                        android:text="@string/off_str" />
+                        android:orientation="horizontal">
 
-                    <TextView
-                        android:textSize="18sp"
-                        android:id="@+id/off_txt"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="5dp"
-                        android:text="0" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="@style/SwitchLabelStyle"
+                            android:text="@string/on_str" />
 
-                    <TextView
-                        android:textSize="18sp"
-                        android:layout_width="wrap_content"
+                        <TextView
+                            android:id="@+id/on_txt"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="@style/SwitchValueStyle"
+                            android:layout_marginStart="5dp"
+                            android:text="0" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="@style/SwitchValueStyle"
+                            android:text=":00" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="90dp"
                         android:layout_height="wrap_content"
-                        android:text=":00" />
+                        android:layout_marginStart="25dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="@style/SwitchLabelStyle"
+                            android:text="@string/off_str" />
+
+                        <TextView
+                            android:id="@+id/off_txt"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="@style/SwitchValueStyle"
+                            android:layout_marginStart="5dp"
+                            android:text="0" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="@style/SwitchValueStyle"
+                            android:text=":00" />
+                    </LinearLayout>
+
                 </LinearLayout>
 
             </LinearLayout>
@@ -118,13 +135,35 @@
             >
 
             <ImageButton
-                android:id="@+id/del_btn"
+                android:id="@+id/add_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@android:color/transparent"
-                android:tint="@color/grey"
+                android:tint="@color/switchIcon"
+                android:contentDescription="@string/add"
+                android:src="@android:drawable/ic_input_add"
+                android:visibility="gone" />
+
+            <ImageButton
+                android:id="@+id/edit_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/edit_str"
+                android:scaleType="fitCenter"
+                android:tint="@color/switchIcon"
+                android:src="@drawable/pencil" />
+
+            <ImageButton
+                android:id="@+id/del_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:background="@android:color/transparent"
+                android:scaleType="fitCenter"
                 android:contentDescription="@string/delete_str"
-                android:src="@android:drawable/ic_menu_delete" />
+                android:tint="@color/switchIcon"
+                android:layout_marginStart="10dp"
+                android:src="@drawable/trash_can" />
 
         </LinearLayout>
 

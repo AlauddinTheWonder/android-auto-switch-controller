@@ -1,4 +1,4 @@
-package com.alan.autoswitch.classes;
+package com.alan.autoswitch.classes.interfaces;
 
 public interface DeviceListener {
     void onInfo(String text);

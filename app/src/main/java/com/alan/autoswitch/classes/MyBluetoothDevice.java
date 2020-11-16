@@ -14,8 +14,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.alan.autoswitch.classes.interfaces.Device;
+import com.alan.autoswitch.classes.interfaces.DeviceListener;
 import com.alan.autoswitch.extra.Constants;
-import com.alan.autoswitch.extra.ProgressDialog;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,7 +45,7 @@ public class MyBluetoothDevice implements Device {
     private DeviceListener listener;
 
 
-    public MyBluetoothDevice(Activity context) {
+    MyBluetoothDevice(Activity context) {
         this.context = context;
         btAdapter = BluetoothAdapter.getDefaultAdapter();
 

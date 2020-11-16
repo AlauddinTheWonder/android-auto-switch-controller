@@ -7,12 +7,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.pm.ActivityInfo;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.Display;
+import android.util.TypedValue;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -22,16 +23,19 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.alan.autoswitch.classes.Device;
-import com.alan.autoswitch.classes.DeviceListener;
+import com.alan.autoswitch.classes.dialog.ConfirmDialog;
+import com.alan.autoswitch.classes.dialog.SwitchDialog;
+import com.alan.autoswitch.classes.interfaces.Device;
+import com.alan.autoswitch.classes.interfaces.DeviceListener;
 import com.alan.autoswitch.classes.MyDevice;
 import com.alan.autoswitch.classes.adapter.SwitchListAdapter;
+import com.alan.autoswitch.classes.model.CommandList;
+import com.alan.autoswitch.classes.model.CommandType;
 import com.alan.autoswitch.classes.model.SwitchModel;
 import com.alan.autoswitch.extra.Command;
 import com.alan.autoswitch.extra.Constants;
 import com.alan.autoswitch.extra.Debounce;
-import com.alan.autoswitch.extra.NumberPickerDialog;
-import com.alan.autoswitch.extra.ProgressDialog;
+import com.alan.autoswitch.classes.dialog.ProgressDialog;
 import com.alan.autoswitch.extra.Utils;
 
 import java.text.SimpleDateFormat;
@@ -48,11 +52,13 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
 
     private Debounce scrollDebounce;
     private ProgressDialog progressDialog;
-    private NumberPickerDialog numberPickerDialog;
+    private SwitchDialog switchDialog;
+    private SwitchListAdapter switchListAdapter;
 
     private SimpleDateFormat utcDF, localDF;
 
     private boolean TerminalMode = false;
+    private boolean ShowLogs = false;
 
     private int NumOfSwitches = 0;
     private int MaxSettingsCount = 0;
@@ -62,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
     final Handler commandHandler = new Handler();
     Thread counterThread = null;
     int commandRetry = 0;
+    CommandType currentCommand;
 
     // Views
     private ScrollView scrollView;
@@ -80,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
 
         context = this;
 
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+//        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         TerminalMode = getIntent().getBooleanExtra(Constants.EXTRA_TERMINAL_MODE, false);
 
@@ -93,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
 
         scrollDebounce = new Debounce(1000);
         progressDialog = new ProgressDialog(this);
-        numberPickerDialog = new NumberPickerDialog(this,"Select Hour");
+        switchDialog = new SwitchDialog(this);
 
         localDF = new SimpleDateFormat(Constants.DATE_FORMAT, Locale.getDefault());
         utcDF = new SimpleDateFormat(Constants.DATE_FORMAT, Locale.getDefault());
@@ -124,28 +131,54 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
             bottomView.setLayoutParams(params);
         }
 
-        // TODO: remove dummy data function
-        loadDummyData();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
         myDevice.setListener(this);
         myDevice.connect();
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        myDevice.disconnect();
+    protected void onDestroy() {
+        super.onDestroy();
+
+        progressDialog.dismiss();
+        myDevice.onExit();
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        progressDialog.dismiss();
-        myDevice.onExit();
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem item = menu.findItem(R.id.action_show_logs);
+
+        Drawable icon = item.getIcon();
+        icon.setTint(getResources().getColor(R.color.menuIconTint));
+        item.setIcon(icon);
+
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_show_logs) {
+            if (ShowLogs) {
+                hideLogPanel();
+
+                Drawable icon = item.getIcon();
+                icon.setTint(getResources().getColor(R.color.menuIconTint));
+                item.setIcon(icon);
+            } else {
+                showLogPanel();
+
+                Drawable icon = item.getIcon();
+                icon.setTint(getResources().getColor(R.color.menuIconTintActive));
+                item.setIcon(icon);
+            }
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -156,8 +189,7 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
     @Override
     public void onDeviceConnect(String name) {
         String str = getString(R.string.connected_str, name);
-        log(str);
-        Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
+        log(str, true);
         deviceNameView.setText(str);
         deviceNameView.setTextColor(getResources().getColor(R.color.deviceConnected));
 
@@ -173,9 +205,8 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
     public void onDeviceDisconnect() {
         deviceNameView.setText(getString(R.string.not_connected_str));
         deviceNameView.setTextColor(getResources().getColor(R.color.grey));
-        log("Device disconnected");
-        Toast.makeText(this, "Device disconnected", Toast.LENGTH_SHORT).show();
-        Command.reset();
+        log("Device disconnected", true);
+        CommandList.reset();
 
         if (counterThread != null) {
             counterThread.interrupt();
@@ -220,8 +251,16 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
         runCommand(Command.SET_TIME, timestampToUTC);
     }
 
-    private void log(final String text) {
+    private void log(String text) {
+        log(text, false);
+    }
+
+    private void log(final String text, boolean showToast) {
         Log.i(Constants.TAG, text);
+
+        if (showToast) {
+            Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
+        }
 
         runOnUiThread(new Runnable() {
             @Override
@@ -242,10 +281,27 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
     private void exitScreen(final String msg) {
         progressDialog.hide();
         if (!msg.isEmpty()) {
-            Log.i(Constants.TAG, msg);
-            Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
+            log(msg, true);
         }
         finish();
+    }
+
+    private void showLogPanel() {
+        ShowLogs = true;
+
+        int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 150, getResources().getDisplayMetrics());
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) bottomView.getLayoutParams();
+        params.height = height;
+
+        bottomView.setLayoutParams(params);
+    }
+
+    private void hideLogPanel() {
+        ShowLogs = false;
+
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) bottomView.getLayoutParams();
+        params.height = 0;
+        bottomView.setLayoutParams(params);
     }
 
     private void startCounter() {
@@ -285,32 +341,49 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
         deviceTimeView.setText(str);
     }
 
-    private void showDetailViews() {
+    private void onDataLoadedFromDevice() {
         timeView.setVisibility(View.VISIBLE);
         switchListView.setVisibility(View.VISIBLE);
+        switchDialog.setPinSize(NumOfSwitches);
 
-        final SwitchListAdapter switchListAdapter = new SwitchListAdapter(switchList);
+        switchListAdapter = new SwitchListAdapter(switchList);
         switchListView.setAdapter(switchListAdapter);
+
         switchListAdapter.setOnEditClickListener(new SwitchListAdapter.OnEditClickListener() {
             @Override
             public void onEdit(int position, SwitchModel switchModel) {
 
-                log("Clicked on " + position);
-                // TODO: show popup for edit
-                switchListAdapter.updateItem(position, switchModel);
+                switchDialog.show(switchModel, position, (dialog, model, position1) -> {
+
+                    int idx = model.getIndex();
+                    if (switchModel.getPin() != model.getPin()) {
+                        CommandList.add(idx, model.getPin());
+                    }
+                    if (switchModel.getOn() != model.getOn()) {
+                        CommandList.add(idx + 1, model.getOn());
+                    }
+                    if (switchModel.getOff() != model.getOff()) {
+                        CommandList.add(idx + 2, model.getOff());
+                    }
+
+                    runCommandList();
+                });
             }
         });
 
         switchListAdapter.setOnDeleteClickListener(new SwitchListAdapter.OnDeleteClickListener() {
             @Override
-            public void onDelete(int position, SwitchModel switchModel) {
+            public void onDelete(final int position, final SwitchModel switchModel) {
+                ConfirmDialog dialog = new ConfirmDialog(context, "Are you sure to delete thhis?");
+                dialog.show((dialog1, which) -> {
+                    int idx = switchModel.getIndex();
 
-                log(String.valueOf(switchModel.getIndex()));
+                    CommandList.add(idx, 0);
+                    CommandList.add(idx + 1, 0);
+                    CommandList.add(idx + 2, 0);
 
-                SwitchModel sModel = new SwitchModel(0, 0, 0, switchModel.getIndex());
-                switchListAdapter.updateItem(position, sModel);
-
-//                switchListAdapter.deleteItem(position);
+                    runCommandList();
+                });
             }
         });
 
@@ -334,10 +407,21 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
         }, 3000);
     }
 
+    private void runCommandList() {
+        if (CommandList.size() == 0) {
+            return;
+        }
+        CommandType command = CommandList.get(0);
+        CommandList.remove(0);
+
+        runCommand(command.getCommand(), command.getParam());
+    }
+
     private void runCommand(final int command, final long param) {
         progressDialog.show();
 
-        Command.set(command, param);
+        currentCommand = new CommandType(command, param);
+
         String commandStr = command + ":" + param;
 
         myDevice.send(commandStr);
@@ -347,7 +431,7 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
             @Override
             public void run() {
                 if (commandRetry >= Constants.COMMAND_MAX_RETRY) {
-                    Command.reset();
+                    currentCommand = null;
                     commandRetry = 0;
                     progressDialog.hide();
 
@@ -376,17 +460,26 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
             log("Empty data received");
             return;
         }
-        int command = Command.COMMAND;
-        long param = Command.PARAM;
+
+        int command = currentCommand.getCommand();
+        long param = currentCommand.getParam();
+
+        currentCommand = null;
 
         commandHandler.removeCallbacksAndMessages(null);
         commandRetry = 0;
-        boolean reParseSettings = true;
 
         switch (command) {
 
+            case Command.PING_BACK:
+                if (data.equals(String.valueOf(Command.PING_BACK))) {
+                    runCommand(Command.GET_ALL_DATA, Command.NO_COMMAND_VALUE);
+                } else {
+                    exitScreen("Invalid device.");
+                }
+                break;
+
             case Command.GET_ALL_DATA:
-                reParseSettings = false;
                 parseInitialConfigData(data);
                 break;
 
@@ -396,27 +489,29 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
                 break;
 
             case Command.GET_SWITCH_VALUE:
-                PinSettingsArray[(int) param] = Integer.parseInt(data);;
+                PinSettingsArray[(int) param] = Integer.parseInt(data);
+                updateSwitchListByIndex((int) param, Integer.parseInt(data));
                 break;
 
             default:
-                if (command > 0 && MaxSettingsCount > 0 && command <= (MaxSettingsCount * 3)) {
-                    PinSettingsArray[command] = Integer.parseInt(data);;
+                if (command > 0 && MaxSettingsCount > 0 && command <= (MaxSettingsCount * Constants.SWITCH_SINGLE_ROW_CNT)) {
+                    PinSettingsArray[command] = Integer.parseInt(data);
+                    updateSwitchListByIndex(command, Integer.parseInt(data));
                 }
                 break;
         }
 
-        if (reParseSettings) {
-            parseSettingsToSwitchList();
+        if (CommandList.size() > 0) {
+            runCommandList();
+        } else {
+            progressDialog.hide();
         }
-        progressDialog.hide();
-        Command.reset();
     }
 
     private void parseInitialConfigData(String data) {
         String[] chunks = data.split("\\|");
-        if (chunks.length > 1) {
-
+        if (chunks.length > 1)
+        {
             for (String chunk : chunks) {
                 if (!chunk.isEmpty()) {
                     String[] commands = chunk.split(":");
@@ -441,13 +536,13 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
                                 MaxSettingsCount = intData;
 
                                 if (MaxSettingsCount > 0) {
-                                    PinSettingsArray = new int[MaxSettingsCount * 3 + 1];
+                                    PinSettingsArray = new int[MaxSettingsCount * Constants.SWITCH_SINGLE_ROW_CNT + 1];
                                     PinSettingsArray[0] = NumOfSwitches; // Pin setting starts from 1 index.
                                 }
                                 break;
 
                             default:
-                                if (MaxSettingsCount > 0 && command <= (MaxSettingsCount * 3)) {
+                                if (MaxSettingsCount > 0 && command <= (MaxSettingsCount * Constants.SWITCH_SINGLE_ROW_CNT)) {
                                     PinSettingsArray[command] = intData;
                                 }
                                 break;
@@ -457,7 +552,7 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
             }
 
             parseSettingsToSwitchList();
-            showDetailViews();
+            onDataLoadedFromDevice();
         } else {
             exitScreen("Invalid data received. Please try again!");
         }
@@ -468,38 +563,32 @@ public class MainActivity extends AppCompatActivity implements DeviceListener {
             switchList.clear();
         }
         for (int i = 0; i < MaxSettingsCount; i++) {
-            int pos = (i * 3) + 1;
-            int pin = PinSettingsArray[pos];
-            int on = PinSettingsArray[pos + 1];
-            int off = PinSettingsArray[pos + 2];
+            int index = (i * Constants.SWITCH_SINGLE_ROW_CNT) + 1;
+            int pin = PinSettingsArray[index];
+            int on = PinSettingsArray[index + 1];
+            int off = PinSettingsArray[index + 2];
 
-            SwitchModel switchModel = new SwitchModel(pin, on, off, pos);
+            SwitchModel switchModel = new SwitchModel(pin, on, off, index);
             switchList.add(switchModel);
         }
     }
 
-    private void loadDummyData() {
-        if (TerminalMode) {
-            terminalView.setVisibility(View.VISIBLE);
-        } else {
-            NumOfSwitches = 3;
-            MaxSettingsCount = 10;
+    private void updateSwitchListByIndex(int command, int value) {
+        int target = command - 1;
+        int position = (int) Math.floor(target / (float) Constants.SWITCH_SINGLE_ROW_CNT);
+        int sequence = target - (position * Constants.SWITCH_SINGLE_ROW_CNT); // 0 = pin, 1 = on, 2 = off
 
-            DeviceTimestamp = Utils.getCurrentTimeUTC();
-
-            PinSettingsArray = new int[MaxSettingsCount * 3 + 1];
-            PinSettingsArray[0] = NumOfSwitches;
-
-            for (int i = 0; i < MaxSettingsCount; i++) {
-                int pos = (i * 3) + 1;
-
-                PinSettingsArray[pos] = i + 1;
-                PinSettingsArray[pos + 1] = Utils.getRandomNumberInRange(0, 23);
-                PinSettingsArray[pos + 2] = Utils.getRandomNumberInRange(0, 23);
-            }
-
-            parseSettingsToSwitchList();
-            showDetailViews();
+        SwitchModel switchModel = switchList.get(position);
+        if (sequence == 0) {
+            switchModel.setPin(value);
         }
+        else if (sequence == 1) {
+            switchModel.setOn(value);
+        }
+        else if (sequence == 2) {
+            switchModel.setOff(value);
+        }
+        switchListAdapter.updateItem(position, switchModel);
     }
+
 }

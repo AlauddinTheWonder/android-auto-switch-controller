@@ -1,4 +1,4 @@
-package com.alan.autoswitch.extra;
+package com.alan.autoswitch.classes.dialog;
 
 import android.content.Context;
 import android.content.DialogInterface;
